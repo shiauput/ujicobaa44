@@ -1,1 +1,84 @@
 # ujicobaa44
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peta Interaktif - Lampung</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<h2 style="text-align: center;">Peta Interaktif - Lampung</h2>
+<div id="map" style="width: 100%; height: 600px;"></div>
+
+<script>
+    var map = L.map('map').setView([-4.9, 105.2], 8); // Fokus ke wilayah Lampung
+
+    // Basemap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Fungsi bantu popup
+    function bindPopupFromProperties(feature, layer) {
+        let content = "";
+        for (let key in feature.properties) {
+            content += "<b>" + key + "</b>: " + feature.properties[key] + "<br>";
+        }
+        layer.bindPopup(content);
+    }
+
+    // Layer 1: Administratif Lampung
+    fetch('adm-lampung.json')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: { color: "black", weight: 2, fillOpacity: 0.05 },
+                onEachFeature: bindPopupFromProperties
+            }).addTo(map);
+        });
+
+    // Layer 2: Sungai
+    fetch('shp-sungai-balam.json')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: { color: "blue", weight: 1 },
+                onEachFeature: bindPopupFromProperties
+            }).addTo(map);
+        });
+
+    // Layer 3: Jalan
+    fetch('shp-jalan-balam.json')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: { color: "red", weight: 1 },
+                onEachFeature: bindPopupFromProperties
+            }).addTo(map);
+        });
+
+    // Layer 4: Persebaran SMA (titik)
+    fetch('persebaran-sma.json')
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, {
+                        radius: 5,
+                        fillColor: "green",
+                        color: "darkgreen",
+                        weight: 1,
+                        fillOpacity: 0.8
+                    });
+                },
+                onEachFeature: bindPopupFromProperties
+            }).addTo(map);
+        });
+</script>
+
+</body>
+</html>
